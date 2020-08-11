@@ -1,10 +1,7 @@
 package com.xpf.juc.lock;
 
 
-import com.xpf.juc.lock.runnable.ClassLockRunnable;
-import com.xpf.juc.lock.runnable.ObjectLockRunnable;
-import com.xpf.juc.lock.runnable.OrdinaryRunnable;
-import com.xpf.juc.lock.runnable.ReentrantLockRunnable;
+import com.xpf.juc.lock.runnable.*;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -16,6 +13,7 @@ public class MainActivity {
         objectLockTest();
         classLockTest();
         volatileTest();
+        atomicTest();
     }
 
     private static void ordinaryNoLockTest() {
@@ -103,28 +101,40 @@ public class MainActivity {
     }
 
     private static void volatileTest() {
+        try {
+            VolatileRunnable runnable = new VolatileRunnable();
 
-        final VolatileSafe volatileSafe = new VolatileSafe();
+            Thread thread1 = new Thread(runnable);
+            Thread thread2 = new Thread(runnable);
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                log.debug("线程1开始执行...");
-                volatileSafe.print();
-            }
-        }).start();
+            thread1.start();
+            thread2.start();
 
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                log.debug("线程2开始执行...");
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                volatileSafe.increase();
-            }
-        }).start();
+            thread1.join();
+            thread2.join();
+
+            log.debug("### Volatile 测试 ### i===" + VolatileRunnable.i);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void atomicTest() {
+        try {
+            AtomicRunnable runnable = new AtomicRunnable();
+
+            Thread thread1 = new Thread(runnable);
+            Thread thread2 = new Thread(runnable);
+
+            thread1.start();
+            thread2.start();
+
+            thread1.join();
+            thread2.join();
+
+            log.debug("### Atomic 测试 ### i===" + AtomicRunnable.i.get());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }
