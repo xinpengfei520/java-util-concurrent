@@ -1,12 +1,11 @@
 package com.xpf.juc.controller;
 
-import com.xpf.juc.atomic.Counter;
-import com.xpf.juc.atomic.CounterBasic;
-import com.xpf.juc.atomic.CounterCAS;
+import com.xpf.juc.atomic.*;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
+@RequestMapping("/Counter")
 public class CounterTestController {
 
     /**
@@ -17,8 +16,8 @@ public class CounterTestController {
     /**
      * 限流 --- 超过一定的处理量，多出来的量 不处理
      */
-    @RequestMapping()
-    public String findUserId() {
+    @RequestMapping("/findByUserId")
+    public String findByUserId() {
         // i++;
         counter.increase();
         try {
@@ -30,24 +29,28 @@ public class CounterTestController {
             // 并发数减一
             counter.decrease();
         }
-        return "xx";
+
+        return "ok";
     }
 
     public static void main(String[] args) throws InterruptedException {
-        final Counter ct = new CounterCAS();
+//        final Counter counter = new CounterAtomic();
+//        final Counter counter = new CounterBasic();
+//        final Counter counter = new CounterCAS();
+        final Counter counter = new CounterUnsafe();
 
         for (int i = 0; i < 2; i++) {
             new Thread(() -> {
                 long begin = System.nanoTime();
                 for (int j = 0; j < 10000; j++) {
-                    ct.increase(); // i++
+                    counter.increase(); // i++
                 }
                 System.out.println("done...运算时间： " + (System.nanoTime() - begin));
             }).start();
         }
 
-        Thread.sleep(6000L);
-        System.out.println("计数器最终结果: " + ct.get());
+        Thread.sleep(1000L);
+        System.out.println("计数器最终结果: " + counter.get());
         // 预期结果应该 --- 20000
     }
 }

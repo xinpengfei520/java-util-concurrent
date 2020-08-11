@@ -5,22 +5,29 @@ import sun.misc.Unsafe;
 import java.lang.reflect.Field;
 
 public class CounterCAS implements Counter {
-    volatile int i = 0; // 本质是修改内存中某一个变量的值
 
-    static Unsafe unsafe;
+    /**
+     * 本质是修改内存中某一个变量的值
+     */
+    volatile int i = 0;
 
-    // 字段偏移量(相对对象开始的位置)    01010 10101 0101 0101010 101
-    static long valueoffset;
+    private static Unsafe unsafe;
+
+    /**
+     * 字段偏移量(相对对象开始的位置) 01010 10101 0101 0101010 101
+     */
+    private static long valueOffset;
 
     static {
         try {
             // jvm --- 反射
             Field field = Unsafe.class.getDeclaredField("theUnsafe");
-            field.setAccessible(true);// 暴力破解
+            // 暴力破解
+            field.setAccessible(true);
             unsafe = (Unsafe) field.get(null);
 
-            Field fieldi = CounterCAS.class.getDeclaredField("i");
-            valueoffset = unsafe.objectFieldOffset(fieldi);
+            Field fieldI = CounterCAS.class.getDeclaredField("i");
+            valueOffset = unsafe.objectFieldOffset(fieldI);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -30,13 +37,16 @@ public class CounterCAS implements Counter {
     public int increase() {
         int current; // 内存当前值
         int result; // 计算后的结果
+
         do {
             // 1. 获取属性 i 的值
             current = i;
-            // 2. 计算 i+1  iadd
+            // 2. 计算 i+1  i add
             result = current + 1;
             // 3. CAS 操作进行赋值
-        }while (!unsafe.compareAndSwapInt(this, valueoffset, current,result)); // 多个线程同时调用，只有一个能调用成功
+            // 多个线程同时调用，只有一个能调用成功
+        } while (!unsafe.compareAndSwapInt(this, valueOffset, current, result));
+
         return result;
     }
 

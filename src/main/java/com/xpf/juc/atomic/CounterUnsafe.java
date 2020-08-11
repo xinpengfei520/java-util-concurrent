@@ -5,15 +5,19 @@ import sun.misc.Unsafe;
 import java.lang.reflect.Field;
 
 public class CounterUnsafe implements Counter {
-    volatile int i = 0;
+
+    private volatile int i = 0;
 
     private static Unsafe unsafe = null;
 
-    //i字段的偏移量
+    /**
+     * i字段的偏移量
+     */
     private static long valueOffset;
 
     static {
-        //unsafe = Unsafe.getUnsafe();
+        // 通过静态方法拿不到，必须要使用反射来拿
+        // unsafe = Unsafe.getUnsafe();
         try {
             Field field = Unsafe.class.getDeclaredField("theUnsafe");
             field.setAccessible(true);
@@ -30,7 +34,7 @@ public class CounterUnsafe implements Counter {
 
     @Override
     public int increase() {
-        //i++;
+        // i++;
         for (; ; ) {
             int current = unsafe.getIntVolatile(this, valueOffset);
             int update = current + 1;
@@ -42,7 +46,7 @@ public class CounterUnsafe implements Counter {
 
     @Override
     public int decrease() {
-        //i--;
+        // i--;
         for (; ; ) {
             int current = unsafe.getIntVolatile(this, valueOffset);
             int update = current - 1;
