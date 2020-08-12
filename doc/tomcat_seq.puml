@@ -1,0 +1,13 @@
+@startuml
+客户端 -> Tomcat: send request
+Tomcat -> ThreadPool: put request in thread pool
+ThreadPool -> Thread: allocation a thread to the request
+Thread -> Controller: 转发到具体的Controller
+Controller -> Service: 处理具体的业务逻辑
+
+Controller <-- Service: 处理完业务将数据返回给Controller层
+Thread <-- Controller: 交给线程处理
+ThreadPool <-- Thread: 线程处理完毕
+Tomcat <-- ThreadPool: 释放线程资源
+客户端 <-- Tomcat: 响应数据给客户端
+@enduml
