@@ -1,6 +1,7 @@
 package com.xpf.juc.controller;
 
 import com.xpf.juc.atomic.*;
+import com.xpf.juc.utils.R;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,7 +18,7 @@ public class CounterTestController {
      * 限流 --- 超过一定的处理量，多出来的量 不处理
      */
     @RequestMapping("/findByUserId")
-    public String findByUserId() {
+    public R findByUserId() {
         // i++;
         counter.increase();
         try {
@@ -30,7 +31,7 @@ public class CounterTestController {
             counter.decrease();
         }
 
-        return "ok";
+        return R.ok();
     }
 
     public static void main(String[] args) throws InterruptedException {
